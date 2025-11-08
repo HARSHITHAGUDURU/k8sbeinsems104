@@ -23,20 +23,38 @@ public class UserServiceImpl implements UserService {
         if (existingUser.isPresent()) {
             return "User already registered!";
         }
+
+        // ✅ Encode the password before saving
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        // ✅ Enable user account by default
         user.setEnabled(true);
-        user.setRole(user.getRole() != null ? user.getRole() : "USER"); // Default to USER
+
+        // ✅ Default role to USER if not provided
+        if (user.getRole() == null || user.getRole().isEmpty()) {
+            user.setRole("USER");
+        }
+
         userRepository.save(user);
         return "Registration success!";
     }
 
+    /**
+     * ⚠️ This method is not used because authentication is handled
+     * via AuthenticationManager in UserController. You can safely remove it.
+     * 
+     * Keeping it here for completeness if you ever want manual login check.
+     */
     @Override
     public String loginUser(String email, String password) {
         Optional<User> userOptional = userRepository.findByEmail(email);
         if (userOptional.isEmpty()) {
             return "User not found";
         }
+
         User user = userOptional.get();
+
+        // ✅ Compare raw password with encoded password
         if (passwordEncoder.matches(password, user.getPassword())) {
             return "Login successful!";
         } else {
